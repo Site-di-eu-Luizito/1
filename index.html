@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Site do Luizito</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Betania+Patmos&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tahoma', 'MS Sans Serif', Geneva, sans-serif; }
+    body { background-color: #008080; color: #000; height: 100vh; display: flex; overflow: hidden; font-size: 14px; }
+
+    /* ESTILO JANELA WINDOWS 2000 / ICQ */
+    .win-window {
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #ffffff #404040 #404040 #ffffff;
+      box-shadow: 1px 1px 0px #000;
+      padding: 3px;
+    }
+
+    .win-titlebar {
+      background: linear-gradient(90deg, #000080, #1084d0);
+      color: #ffffff;
+      font-weight: bold;
+      padding: 4px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    /* REGRAS PARA DISPOSITIVOS MÓVEIS */
+    @media (max-width: 768px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+
+      #login-overlay {
+        padding: 16px;
+      }
+
+      .login-card {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .creditos-luizito {
+        font-size: 1rem;
+        left: 10px;
+        bottom: 10px;
+      }
+
+      #app-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding: 6px;
+        gap: 8px;
+      }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+      }
+
+      .sidebar-top, .sidebar-bottom {
+        max-height: 200px;
+      }
+
+      .main-content {
+        width: 100%;
+        height: auto;
+        min-height: 450px;
+      }
+
+      .library-grid, .games-grid, .video-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+      }
+
+      .book-reader-window, .video-player-window {
+        width: 95vw;
+        height: 90vh;
+      }
+
+      .book-controls .btn-win, .video-controls .btn-win {
+        width: auto !important;
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+
+      #gallery-modal img {
+        max-width: 95vw;
+        max-height: 70vh;
+      }
+
+      .modal-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .modal-controls .btn-win {
+        width: auto !important;
+        padding: 8px 12px;
+      }
+    }
+
+    /* TELA DE LOGIN ESTILO ANOS 2000 */
+    #login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('fundo.jpg') no-repeat center center / 100% 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .creditos-luizito {
+      position: absolute;
+      left: 24px;
+      bottom: 24px;
+      color: #ffffff;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px #000000;
+      pointer-events: none;
+    }
+
+    .login-card { width: 450px; }
+    .login-body { padding: 24px; text-align: center; }
+    .login-body h3 { font-size: 20px; margin-bottom: 4px; }
+    .login-body p { font-size: 13px; color: #404040; margin-bottom: 16px; }
+
+    .input-group { text-align: left; margin-bottom: 16px; }
+    .input-group label { display: block; margin-bottom: 6px; font-weight: bold; color: #000; font-size: 12px; }
+    
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 8px;
+      background: #ffffff;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .btn-win {
+      width: 100%;
+      padding: 8px;
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #ffffff #404040 #404040 #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 6px;
+      font-size: 13px;
+    }
+
+    .btn-win:active {
+      border-color: #404040 #ffffff #ffffff #404040;
+      padding: 9px 7px 7px 9px;
+    }
+
+    .divider { height: 2px; border-top: 1px solid #808080; border-bottom: 1px solid #ffffff; margin: 16px 0; }
+
+    /* INTERFACE PRINCIPAL */
+    #app-container { display: none; width: 100vw; height: 100vh; padding: 10px; gap: 10px; box-sizing: border-box; }
+
+    /* PAINEL LATERAL */
+    .sidebar { width: 240px; display: flex; flex-direction: column; gap: 4px; height: 100%; }
+    
+    .sidebar-top { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .sidebar-bottom { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+    .channel-list { 
+      padding: 8px; 
+      flex: 1; 
+      background: #ffffff; 
+      border: 2px solid; 
+      border-color: #404040 #ffffff #ffffff #404040; 
+      margin: 4px; 
+      overflow-y: auto; 
+      font-size: 14px; 
+    }
+    
+    .channel-item { padding: 4px; color: #000080; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    
+    .menu-container {
+      padding: 6px;
+      flex: 1;
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+    }
+
+    .user-profile { background: #c0c0c0; padding: 8px; display: flex; align-items: center; gap: 10px; border-top: 2px solid #ffffff; }
+    .avatar { 
+      width: 48px; 
+      height: 48px; 
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      background: #000080; 
+      color: #fff;
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: bold; 
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+
+    .user-info .username { font-weight: bold; color: #000; font-size: 13px; }
+    .user-info .subtext { color: #008000; font-size: 11px; }
+
+    /* ÁREA PRINCIPAL E TELAS */
+    .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; }
+    .tab-screen { display: none; flex: 1; flex-direction: column; height: 100%; }
+    .tab-screen.active { display: flex; }
+
+    /* CHAT */
+    .chat-messages { 
+      flex: 1; 
+      padding: 10px; 
+      background: #ffffff; 
+      border: 2px solid; 
+      border-color: #404040 #ffffff #ffffff #404040; 
+      margin: 4px; 
+      overflow-y: auto; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px; 
+    }
+
+    .message-group { display: flex; gap: 12px; align-items: flex-start; }
+    .message-header { display: flex; gap: 8px; margin-bottom: 4px; align-items: baseline; }
+    .message-author { font-weight: bold; color: #000080; font-size: 18px; }
+    .message-time { color: #808080; font-size: 14px; }
+    .message-text { color: #000000; font-size: 18px; line-height: 1.4; }
+    .system-msg { text-align: center; color: #808080; font-style: italic; margin: 4px 0; font-size: 14px; }
+
+    .chat-input-container { padding: 4px; }
+    .chat-input-wrapper { display: flex; gap: 6px; }
+    .chat-input-wrapper input { flex: 1; font-size: 16px; }
+
+    /* MÚSICAS */
+    .music-list {
+      flex: 1;
+      padding: 10px;
+      background: #ffffff;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 4px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .music-card {
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #ffffff #404040 #404040 #ffffff;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .music-title { 
+      font-weight: bold; 
+      color: #000; 
+      font-size: 16px; 
+    }
+
+    .music-card .btn-win {
+      font-size: 16px; 
+      padding: 6px 12px; 
+    }
+
+    #galeria-fotos {
+      flex: 1;
+      padding: 10px;
+      background: #ffffff;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 4px;
+      overflow-y: auto; 
+      display: flex;
+      flex-direction: column;
+      align-items: center; 
+      gap: 10px;
+    }
+    .gallery-img {
+      max-width: 100%;
+      border: 2px solid #404040;
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    /* FULLSCREEN GALERIA */
+    #gallery-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 200;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #gallery-modal img {
+      max-width: 85vw;
+      max-height: 80vh;
+      border: 2px solid #fff;
+    }
+
+    .modal-controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 20px;
+    }
+
+    /* BIBLIOTECA - FORMATO DE LIVRO (VERTICAL 3:4) */
+    /* BIBLIOTECA - FORMATO DE LIVRO (VERTICAL 3:4) */
+    .library-grid {
+      flex: 1;
+      padding: 15px;
+      background: #ffffff;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 4px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .book-card {
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #ffffff #404040 #404040 #ffffff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .book-card:hover {
+      background: #d4d4d4;
+    }
+
+    .book-cover {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      background: #808080;
+      margin-bottom: 10px;
+    }
+
+    .book-info {
+      width: 100%;
+      text-align: center;
+    }
+
+    .book-title {
+      font-weight: bold;
+      font-size: 15px;
+      color: #000080;
+      margin-bottom: 2px;
+    }
+
+    .book-author {
+      font-size: 13px;
+      color: #333;
+    }
+
+    .book-year {
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* MODAL DE LEITURA DO LIVRO */
+    #book-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .book-reader-window {
+      width: 650px;
+      max-width: 90vw;
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .book-reader-content {
+      flex: 1;
+      background: #ffffff;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 6px;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .book-page-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border: 2px solid #404040;
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .book-page-text {
+      width: 100%;
+      height: 100%;
+      font-size: 18px;
+      line-height: 1.6;
+      color: #000;
+      white-space: pre-wrap;
+      font-family: "Betania Patmos", cursive;
+      font-weight: 400;
+      font-style: normal;
+      overflow-y: auto;
+    }
+
+    .book-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px;
+      background: #c0c0c0;
+      border-top: 2px solid #ffffff;
+    }
+
+    /* FALE COMIGO */
+    .contact-container {
+      flex: 1;
+      padding: 16px;
+      background: #ffffff;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 4px;
+      overflow-y: auto;
+    }
+
+    .contact-info { 
+      margin-bottom: 16px; 
+      font-size: 18px; 
+      line-height: 1.6; 
+    }
+
+    /* JOGOS - QUADRADO COM BASE MAIOR QUE ALTURA (ASPECT 4:3) */
+    .games-grid {
+      flex: 1;
+      padding: 15px;
+      background: #ffffff;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 4px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .game-card {
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #ffffff #404040 #404040 #ffffff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .game-thumb {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      background: #000;
+      margin-bottom: 8px;
+    }
+
+    .game-title {
+      font-weight: bold;
+      font-size: 16px;
+      color: #000080;
+      margin-bottom: 4px;
+    }
+
+    .game-desc {
+      font-size: 12px;
+      color: #333;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    #game-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 250;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .game-window {
+      width: 900px;
+      max-width: 95vw;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .game-iframe-container {
+      flex: 1;
+      background: #000;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 4px;
+    }
+
+    .game-iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* VÍDEOS - ESTILO YOUTUBE (16:9 widescreen retro) */
+    .video-grid {
+      flex: 1;
+      padding: 15px;
+      background: #ffffff;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 4px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .video-card {
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #ffffff #404040 #404040 #ffffff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .video-card:hover {
+      background: #d4d4d4;
+    }
+
+    .video-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      background: #000;
+      margin-bottom: 8px;
+    }
+
+    .video-title {
+      font-weight: bold;
+      font-size: 15px;
+      color: #000080;
+      text-align: left;
+      width: 100%;
+    }
+
+    #video-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 250;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .video-player-window {
+      width: 800px;
+      max-width: 95vw;
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-display-area {
+      flex: 1;
+      background: #000;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      margin: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .video-display-area video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      outline: none;
+    }
+
+    .video-controls {
+      padding: 8px;
+      background: #c0c0c0;
+      border-top: 2px solid #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .video-progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #ffffff;
+      border: 2px solid;
+      border-color: #404040 #ffffff #ffffff #404040;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .video-progress-fill {
+      height: 100%;
+      background: #000080;
+      width: 0%;
+    }
+
+    .video-buttons-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div class="creditos-luizito">
+      Feito por luizito - 29/08/2026 ˙𐃷˙
+    </div>
+
+    <div class="win-window login-card">
+      <div class="win-titlebar">
+        <span>Ruan bobão gosta de K-on 🎸⋆⭒˚｡⋆</span>
+        <span>[X]</span>
+      </div>
+      <div class="login-body">
+        <h3>Boas-vindas de volta!</h3>
+        <p>Estamos muito animados em te ver novamente!</p>
+        
+        <div class="input-group">
+          <label>ESCOLHA SEU APELIDO</label>
+          <input type="text" id="apelido" placeholder="Como quer ser chamado?">
+        </div>
+
+        <button onclick="criarSala()" class="btn-win">[ Criar Nova Sala ]</button>
+        
+        <div class="divider"></div>
+
+        <div class="input-group">
+          <label>ENTRAR EM UMA SALA</label>
+          <input type="text" id="codigo-entrada" placeholder="Ex: sala-1234">
+        </div>
+        <button onclick="entrarNaSala()" class="btn-win">[ Entrar na Sala ]</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-container">
+    <div class="win-window sidebar">
+      <div class="sidebar-top">
+        <div class="win-titlebar">
+          <span id="titulo-contatos">Contatos na Sala (1)</span>
+        </div>
+        <div class="channel-list" id="lista-usuarios"></div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="win-titlebar">
+          <span>Menu Principais</span>
+        </div>
+        <div class="menu-container">
+          <button class="btn-win" style="font-size: 18px;" onclick="abrirAba('chat')">⌯⌲ Chat</button>
+          <button class="btn-win" style="font-size: 18px;" onclick="abrirAba('musicas')">𝄞 Músicas</button>
+          <button class="btn-win" style="font-size: 18px;" onclick="abrirAba('galeria')">🅾 Galeria</button>
+          <button class="btn-win" style="font-size: 18px;" onclick="abrirAba('biblioteca')">🕮 Biblioteca</button>
+          <button class="btn-win" style="font-size: 18px;" onclick="abrirAba('jogos')">🕹 Jogos</button>
+          <button class="btn-win" style="font-size: 18px;" onclick="abrirAba('videos')">▶︎ Vídeos</button>
+          <button class="btn-win" style="font-size: 18px;" onclick="abrirAba('fale-comigo')">🖂 Fale Comigo</button>
+        </div>
+      </div>
+
+      <div class="user-profile">
+        <div class="avatar" id="user-avatar" onclick="focarParaTrocarFoto()" title="Clique para trocar foto" style="cursor: pointer; background-size: cover; background-position: center;">U</div>
+        <canvas id="foto-64x64" width="64" height="64" style="display: none;"></canvas>
+        <div class="user-info">
+          <div class="username" id="display-username">Usuário</div>
+          <div class="subtext">Online ꩜</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      
+      <div id="screen-chat" class="win-window tab-screen active">
+        <div class="win-titlebar">
+          <span id="header-room-code">Conversa - Sala</span>
+        </div>
+        <div class="chat-messages" id="mensagens">
+          <div class="system-msg">--- Conexão estabelecida ---</div>
+        </div>
+        <div class="chat-input-container">
+          <div class="chat-input-wrapper">
+            <input type="text" id="texto-msg" placeholder="Digite sua mensagem ou cole uma imagem..." onkeypress="if(event.key === 'Enter') enviarMensagem()">
+            <button class="btn-win" style="width: 80px; margin-top:0;" onclick="enviarMensagem()">Enviar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="screen-musicas" class="win-window tab-screen">
+        <div class="win-titlebar">
+          <span>Audíos & Músicas</span>
+        </div>
+        <div class="music-list" id="lista-musicas"></div>
+      </div>
+
+      <div id="screen-galeria" class="win-window tab-screen">
+        <div class="win-titlebar">
+          <span>Galeria de Imagens</span>
+          <button class="btn-win" style="width: auto; padding: 0 6px; margin-top: 0;" onclick="ampliarGaleria()">[ Ampliar ]</button>
+        </div>
+        <div class="gallery-container" id="galeria-fotos"></div>
+      </div>
+
+      <div id="screen-biblioteca" class="win-window tab-screen">
+        <div class="win-titlebar">
+          <span>Biblioteca Digital</span>
+        </div>
+        <div class="library-grid" id="lista-livros"></div>
+      </div>
+
+      <!-- ABA JOGOS -->
+      <div id="screen-jogos" class="win-window tab-screen">
+        <div class="win-titlebar">
+          <span>Jogos Godot / Web</span>
+        </div>
+        <div class="games-grid" id="lista-jogos"></div>
+      </div>
+
+      <!-- ABA VÍDEOS -->
+      <div id="screen-videos" class="win-window tab-screen">
+        <div class="win-titlebar">
+          <span>Coleção de Vídeos (VHS)</span>
+        </div>
+        <div class="video-grid" id="lista-videos"></div>
+      </div>
+
+      <div id="screen-fale-comigo" class="win-window tab-screen">
+        <div class="win-titlebar">
+          <span>Fale Comigo</span>
+        </div>
+        <div class="contact-container">
+          <div class="contact-info">
+            <p><strong>E-mail de contato:</strong> luizitosabido@gmail.com</p>
+            <br>
+            <p><strong>E-mail de contato:</strong> luizitosabido@gmail.com</p>
+            <br>
+            <p><strong>Descrição:</strong> </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="gallery-modal">
+    <img id="modal-img" src="" alt="Ampliada">
+    <div class="modal-controls">
+      <button class="btn-win" style="width: 100px;" onclick="mudarFotoModal(-1)">◄ Anterior</button>
+      <button class="btn-win" style="width: 100px;" onclick="minimizarGaleria()">Minimizar</button>
+      <button class="btn-win" style="width: 100px;" onclick="mudarFotoModal(1)">Próxima ►</button>
+    </div>
+  </div>
+
+  <div id="book-modal">
+    <div class="win-window book-reader-window">
+      <div class="win-titlebar">
+        <span id="book-modal-title">Lendo Livro</span>
+        <button class="btn-win" style="width: auto; padding: 0 6px; margin-top: 0;" onclick="fecharLivro()">[ X ]</button>
+      </div>
+      <div class="book-reader-content" id="book-modal-content"></div>
+      <div class="book-controls">
+        <button class="btn-win" style="width: 100px;" onclick="mudarPaginaLivro(-1)">◄ Voltar</button>
+        <span id="book-page-indicator" style="font-weight: bold;">Página 1</span>
+        <button class="btn-win" style="width: 100px;" onclick="fecharLivro()">Minimizar</button>
+        <button class="btn-win" style="width: 100px;" onclick="mudarPaginaLivro(1)">Avançar ►</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE EXIBIÇÃO DE JOGOS GODOT -->
+  <div id="game-modal">
+    <div class="win-window game-window">
+      <div class="win-titlebar">
+        <span id="game-modal-title">Executando Jogo</span>
+        <button class="btn-win" style="width: auto; padding: 0 6px; margin-top: 0;" onclick="fecharJogo()">[ X ]</button>
+      </div>
+      <div class="game-iframe-container">
+        <iframe id="game-frame" src="" allow="fullscreen; autoplay; gamepad"></iframe>
+      </div>
+      <div class="book-controls">
+        <button class="btn-win" style="width: 120px;" onclick="toggleFullscreenJogo()">⛶ Tela Cheia</button>
+        <button class="btn-win" style="width: 100px;" onclick="fecharJogo()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PLAYER DE VÍDEO -->
+  <div id="video-modal">
+    <div class="win-window video-player-window">
+      <div class="win-titlebar">
+        <span id="video-modal-title">Player de Vídeo</span>
+        <button class="btn-win" style="width: auto; padding: 0 6px; margin-top: 0;" onclick="fecharVideo()">[ X ]</button>
+      </div>
+      <div class="video-display-area">
+        <video id="main-video-player" src=""></video>
+      </div>
+      <div class="video-controls">
+        <div class="video-progress-bar" id="video-progress-container" onclick="seekVideo(event)">
+          <div class="video-progress-fill" id="video-progress-fill"></div>
+        </div>
+        <div class="video-buttons-row">
+          <button class="btn-win" style="width: 100px;" onclick="voltarVideo10s()">◄◄ -10s</button>
+          <button class="btn-win" style="width: 100px;" id="btn-play-video" onclick="togglePlayVideo()">▶ Play</button>
+          <button class="btn-win" style="width: 100px;" onclick="avancarVideo10s()">+10s ►►</button>
+          <span id="video-time-indicator" style="font-weight: bold; font-size: 13px;">00:00 / 00:00</span>
+          <button class="btn-win" style="width: 80px;" onclick="toggleMuteVideo()">🔊 Mute</button>
+          <button class="btn-win" style="width: 100px;" onclick="fecharVideo()">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CONFIGURAÇÃO DE MÚSICAS
+    const listaDeMusicas = [
+      { titulo: "01. Lemon Demon Fine", arquivo: "Lemon_Demon_Fine.mp3" },
+      { titulo: "02. The Clash Should I Stay or Should I Go", arquivo: "The_Clash_Should_I_Stay_or_Should_I_Go.mp3" },
+      { titulo: "03. Kiss the Rain Yiruma", arquivo: "Yiruma_Kiss_The_Rain.mp3" },
+    ];
+
+    // CONFIGURAÇÃO DE FOTOS
+    const listaDeFotos = [
+      "fundo.jpg",
+      "imagem.jpg",
+      "lemondemon.jpg",
+      "TheClash.jpg"
+    ];
+
+    // CONFIGURAÇÃO DE LIVROS
+    const listaDeLivros = [
+      {
+        titulo: "Nada",
+        autor: "Luizito",
+        ano: "2026",
+        capa: "fundo.jpg",
+        paginas: [
+          { tipo: "apresentacao", imagem: "fundo.jpg" },
+          { tipo: "texto", conteudo: "" },
+          { tipo: "texto", conteudo: "" }
+        ]
+      },
+      {
+        titulo: "Nada",
+        autor: "Luizito",
+        ano: "2026",
+        capa: "fundo.jpg",
+        paginas: [
+          { tipo: "apresentacao", imagem: "fundo.jpg" },
+          { tipo: "texto", conteudo: "" },
+          { tipo: "texto", conteudo: "" }
+        ]
+      }
+    ];
+
+    // CONFIGURAÇÃO DE JOGOS GODOT / WEB
+    const listaDeJogos = [
+      {
+        titulo: "Coisas Do Mundo",
+        descricao: "Prisoẽs da carne",
+        capa: "capa.png",
+        url: "7 coisas do mundo.html"
+      }
+    ];
+
+    // CONFIGURAÇÃO DE VÍDEOS
+    const listaDeVideos = [
+      {
+        titulo: "linux vs bill gates",
+        capa: "linuxvsbiillgates.jpg",
+        arquivo: "linux_vs_bill_gates.mp4"
+      },
+      {
+        titulo: "Charlie Chaplin Modern Times",
+        capa: "charp1.jpg",
+        arquivo: "Charlie_Chaplin_Modern_Times.mp4"
+      },
+   
+    ];
+
+    function carregarMusicas() {
+      const container = document.getElementById('lista-musicas');
+      container.innerHTML = '';
+      listaDeMusicas.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'music-card';
+        div.innerHTML = `
+          <span class="music-title">${item.titulo}</span>
+          <div>
+            <button class="btn-win" style="width: 60px; margin-top:0;" onclick="tocarMusica(this, '${item.arquivo}')">▶ Play</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function carregarGaleria() {
+      const container = document.getElementById('galeria-fotos');
+      container.innerHTML = '';
+      listaDeFotos.forEach(arquivo => {
+        const img = document.createElement('img');
+        img.src = arquivo;
+        img.className = 'gallery-img';
+        img.alt = 'Imagem Galeria';
+        container.appendChild(img);
+      });
+    }
+
+    function carregarBiblioteca() {
+      const container = document.getElementById('lista-livros');
+      container.innerHTML = '';
+      listaDeLivros.forEach((livro, index) => {
+        const div = document.createElement('div');
+        div.className = 'book-card';
+        div.onclick = () => abrirLivro(index);
+        div.innerHTML = `
+          <img class="book-cover" src="${livro.capa}" alt="Capa de ${livro.titulo}">
+          <div class="book-info">
+            <div class="book-title">${livro.titulo}</div>
+            <div class="book-author">${livro.autor}</div>
+            <div class="book-year">${livro.ano}</div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function carregarJogos() {
+      const container = document.getElementById('lista-jogos');
+      container.innerHTML = '';
+      listaDeJogos.forEach((jogo, index) => {
+        const div = document.createElement('div');
+        div.className = 'game-card';
+        div.innerHTML = `
+          <img class="game-thumb" src="${jogo.capa}" alt="${jogo.titulo}">
+          <div class="game-title">${jogo.titulo}</div>
+          <div class="game-desc">${jogo.descricao}</div>
+          <button class="btn-win" onclick="abrirJogo(${index})">[ jogar ]</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function carregarVideos() {
+      const container = document.getElementById('lista-videos');
+      container.innerHTML = '';
+      listaDeVideos.forEach((vid, index) => {
+        const div = document.createElement('div');
+        div.className = 'video-card';
+        div.onclick = () => abrirVideo(index);
+        div.innerHTML = `
+          <img class="video-thumb" src="${vid.capa}" alt="${vid.titulo}">
+          <div class="video-title">${vid.titulo}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      carregarMusicas();
+      carregarGaleria();
+      carregarBiblioteca();
+      carregarJogos();
+      carregarVideos();
+    });
+
+    let peer = null;
+    let conexoes = [];
+    let meuApelido = '';
+    let codigoSala = '';
+    let minhaFotoUrl = '';
+    let usuariosNaSala = [];
+    let audioAtual = null;
+    let indiceFotoAtual = 0;
+
+    let livroAtualIndice = 0;
+    let paginaAtualIndice = 0;
+
+    function abrirAba(nomeAba) {
+      document.querySelectorAll('.tab-screen').forEach(tela => tela.classList.remove('active'));
+      document.getElementById('screen-' + nomeAba).classList.add('active');
+    }
+
+    function tocarMusica(btn, url) {
+      if (audioAtual) {
+        if (audioAtual.src.includes(url)) {
+          if (!audioAtual.paused) {
+            audioAtual.pause();
+            btn.innerText = '▶ Play';
+          } else {
+            audioAtual.play();
+            btn.innerText = '⏸ Pause';
+          }
+          return;
+        } else {
+          audioAtual.pause();
+        }
+      }
+
+      document.querySelectorAll('#lista-musicas .btn-win').forEach(b => b.innerText = '▶ Play');
+
+      audioAtual = new Audio(url);
+      audioAtual.play();
+      btn.innerText = '◼ Pause';
+
+      audioAtual.onended = () => {
+        btn.innerText = '▶ Play';
+      };
+    }
+
+    function ampliarGaleria() {
+      const imagens = document.querySelectorAll('.gallery-img');
+      if (imagens.length === 0) return;
+      indiceFotoAtual = 0;
+      document.getElementById('modal-img').src = imagens[indiceFotoAtual].src;
+      document.getElementById('gallery-modal').style.display = 'flex';
+    }
+
+    function minimizarGaleria() {
+      document.getElementById('gallery-modal').style.display = 'none';
+    }
+
+    function mudarFotoModal(direcao) {
+      const imagens = document.querySelectorAll('.gallery-img');
+      if (imagens.length === 0) return;
+      indiceFotoAtual += direcao;
+      if (indiceFotoAtual < 0) indiceFotoAtual = imagens.length - 1;
+      if (indiceFotoAtual >= imagens.length) indiceFotoAtual = 0;
+      document.getElementById('modal-img').src = imagens[indiceFotoAtual].src;
+    }
+
+    function abrirLivro(index) {
+      livroAtualIndice = index;
+      paginaAtualIndice = 0;
+      exibirPaginaLivro();
+      document.getElementById('book-modal').style.display = 'flex';
+    }
+
+    function fecharLivro() {
+      document.getElementById('book-modal').style.display = 'none';
+    }
+
+    function exibirPaginaLivro() {
+      const livro = listaDeLivros[livroAtualIndice];
+      const pagina = livro.paginas[paginaAtualIndice];
+      const container = document.getElementById('book-modal-content');
+      
+      document.getElementById('book-modal-title').innerText = `${livro.titulo} - ${livro.autor}`;
+      document.getElementById('book-page-indicator').innerText = `Página ${paginaAtualIndice + 1} de ${livro.paginas.length}`;
+
+      container.innerHTML = '';
+
+      if (pagina.tipo === 'apresentacao') {
+        const img = document.createElement('img');
+        img.className = 'book-page-image';
+        img.src = pagina.imagem;
+        container.appendChild(img);
+      } else if (pagina.tipo === 'texto') {
+        const p = document.createElement('div');
+        p.className = 'book-page-text';
+        p.innerText = pagina.conteudo;
+        container.appendChild(p);
+      }
+    }
+
+    function mudarPaginaLivro(direcao) {
+      const livro = listaDeLivros[livroAtualIndice];
+      paginaAtualIndice += direcao;
+
+      if (paginaAtualIndice < 0) paginaAtualIndice = 0;
+      if (paginaAtualIndice >= livro.paginas.length) paginaAtualIndice = livro.paginas.length - 1;
+
+      exibirPaginaLivro();
+    }
+
+    function abrirJogo(index) {
+      const jogo = listaDeJogos[index];
+      document.getElementById('game-modal-title').innerText = `Jogando: ${jogo.titulo}`;
+      document.getElementById('game-frame').src = jogo.url;
+      document.getElementById('game-modal').style.display = 'flex';
+    }
+
+    function fecharJogo() {
+      document.getElementById('game-frame').src = '';
+      document.getElementById('game-modal').style.display = 'none';
+    }
+
+    function toggleFullscreenJogo() {
+      const iframe = document.getElementById('game-frame');
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen();
+      }
+    }
+
+    let playerVideo = null;
+
+    function abrirVideo(index) {
+      const vidData = listaDeVideos[index];
+      playerVideo = document.getElementById('main-video-player');
+      
+      document.getElementById('video-modal-title').innerText = `Vídeo: ${vidData.titulo}`;
+      playerVideo.src = vidData.arquivo;
+      document.getElementById('video-modal').style.display = 'flex';
+
+      playerVideo.play();
+      document.getElementById('btn-play-video').innerText = '⏸ Pause';
+
+      playerVideo.ontimeupdate = atualizarProgressoVideo;
+    }
+
+    function fecharVideo() {
+      if (playerVideo) {
+        playerVideo.pause();
+        playerVideo.src = '';
+      }
+      document.getElementById('video-modal').style.display = 'none';
+    }
+
+    function togglePlayVideo() {
+      if (!playerVideo) return;
+      const btn = document.getElementById('btn-play-video');
+      if (playerVideo.paused) {
+        playerVideo.play();
+        btn.innerText = '⏸ Pause';
+      } else {
+        playerVideo.pause();
+        btn.innerText = '▶ Play';
+      }
+    }
+
+    function voltarVideo10s() {
+      if (playerVideo) playerVideo.currentTime -= 10;
+    }
+
+    function avancarVideo10s() {
+      if (playerVideo) playerVideo.currentTime += 10;
+    }
+
+    function toggleMuteVideo() {
+      if (playerVideo) playerVideo.muted = !playerVideo.muted;
+    }
+
+    function atualizarProgressoVideo() {
+      if (!playerVideo || !playerVideo.duration) return;
+      const pct = (playerVideo.currentTime / playerVideo.duration) * 100;
+      document.getElementById('video-progress-fill').style.width = pct + '%';
+
+      const formatarTempo = (s) => {
+        const min = Math.floor(s / 60);
+        const seg = Math.floor(s % 60);
+        return `${String(min).padStart(2, '0')}:${String(seg).padStart(2, '0')}`;
+      };
+
+      document.getElementById('video-time-indicator').innerText = 
+        `${formatarTempo(playerVideo.currentTime)} / ${formatarTempo(playerVideo.duration)}`;
+    }
+
+    function seekVideo(event) {
+      if (!playerVideo || !playerVideo.duration) return;
+      const container = document.getElementById('video-progress-container');
+      const rect = container.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const ratio = clickX / rect.width;
+      playerVideo.currentTime = ratio * playerVideo.duration;
+    }
+
+    document.addEventListener('keydown', function(e) {
+      const modal = document.getElementById('gallery-modal');
+      if (modal.style.display === 'flex') {
+        if (e.key === 'ArrowLeft') mudarFotoModal(-1);
+        if (e.key === 'ArrowRight') mudarFotoModal(1);
+        if (e.key === 'Escape') minimizarGaleria();
+      }
+
+      const bookModal = document.getElementById('book-modal');
+      if (bookModal.style.display === 'flex') {
+        if (e.key === 'ArrowLeft') mudarPaginaLivro(-1);
+        if (e.key === 'ArrowRight') mudarPaginaLivro(1);
+        if (e.key === 'Escape') fecharLivro();
+      }
+
+      const vidModal = document.getElementById('video-modal');
+      if (vidModal.style.display === 'flex') {
+        if (e.key === 'ArrowLeft') voltarVideo10s();
+        if (e.key === 'ArrowRight') avancarVideo10s();
+        if (e.key === ' ') { e.preventDefault(); togglePlayVideo(); }
+        if (e.key === 'Escape') fecharVideo();
+      }
+
+      const gameModal = document.getElementById('game-modal');
+      if (gameModal.style.display === 'flex') {
+        if (e.key === 'Escape') fecharJogo();
+      }
+    });
+
+    function iniciarInterface() {
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('app-container').style.display = 'flex';
+      document.getElementById('display-username').innerText = meuApelido;
+      
+      const userAvatar = document.getElementById('user-avatar');
+      if (!minhaFotoUrl) {
+        userAvatar.innerText = meuApelido.charAt(0).toUpperCase();
+      }
+
+      document.getElementById('header-room-code').innerText = 'Conversa - Sala: ' + codigoSala;
+
+      usuariosNaSala = [meuApelido];
+      atualizarListaUsuarios();
+
+      const input = document.getElementById('texto-msg');
+      input.addEventListener('paste', handlePaste);
+    }
+
+    function atualizarListaUsuarios() {
+      const listaContainer = document.getElementById('lista-usuarios');
+      const titulo = document.getElementById('titulo-contatos');
+      
+      listaContainer.innerHTML = '';
+      titulo.innerText = `Contatos na Sala (${usuariosNaSala.length})`;
+
+      usuariosNaSala.forEach(nick => {
+        const item = document.createElement('div');
+        item.className = 'channel-item';
+        item.innerHTML = `💿 <span>${nick}</span>`;
+        listaContainer.appendChild(item);
+      });
+    }
+
+    function obterChavesData() {
+      const agora = new Date();
+      const ano = agora.getFullYear();
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const dia = String(agora.getDate()).padStart(2, '0');
+      
+      const primeiroDia = new Date(ano, 0, 1);
+      const dias = Math.floor((agora - primeiroDia) / (24 * 60 * 60 * 1000));
+      const semana = Math.ceil((dias + primeiroDia.getDay() + 1) / 7);
+
+      return {
+        dia: `chat-luizito-dia-${ano}-${mes}-${dia}`,
+        semana: `chat-luizito-sem-${ano}-w${semana}`,
+        mes: `chat-luizito-mes-${ano}-${mes}`,
+        ano: `chat-luizito-ano-${ano}`
+      };
+    }
+
+    function registrarAcesso() {
+      const chaves = obterChavesData();
+      const baseUrl = 'https://countapi.mileshilliard.com/api/v1/hit/';
+      
+      fetch(baseUrl + chaves.dia);
+      fetch(baseUrl + chaves.semana);
+      fetch(baseUrl + chaves.mes);
+      fetch(baseUrl + chaves.ano);
+    }
+
+    function criarSala() {
+      meuApelido = document.getElementById('apelido').value.trim();
+      if (!meuApelido) return alert('Digite seu apelido primeiro!');
+      
+      registrarAcesso();
+
+      codigoSala = 'sala-' + Math.floor(1000 + Math.random() * 9000);
+      peer = new Peer(codigoSala);
+
+      peer.on('open', () => {
+        iniciarInterface();
+        mostrarMensagemSistema(`Sala criada! Envie esse número para seus amigos: ${codigoSala}`);
+      });
+
+      peer.on('connection', (conn) => configurarConexao(conn));
+    }
+
+    function entrarNaSala() {
+      meuApelido = document.getElementById('apelido').value.trim();
+      codigoSala = document.getElementById('codigo-entrada').value.trim();
+
+      if (codigoSala === 'Luinux667855') {
+        abrirPainelDev();
+        return;
+      }
+
+      if (!meuApelido || !codigoSala) return alert('Preencha o apelido e o código da sala!');
+
+      registrarAcesso();
+
+      peer = new Peer();
+
+      peer.on('open', () => {
+        const conn = peer.connect(codigoSala);
+        configurarConexao(conn);
+        iniciarInterface();
+      });
+    }
+
+    function configurarConexao(conn) {
+      conexoes.push(conn);
+
+      conn.on('open', () => {
+        conn.send({ tipo: 'entrou', autor: meuApelido, lista: usuariosNaSala });
+      });
+
+      conn.on('data', (data) => {
+        if (data.tipo === 'entrou') {
+          if (!usuariosNaSala.includes(data.autor)) {
+            usuariosNaSala.push(data.autor);
+            atualizarListaUsuarios();
+          }
+          mostrarMensagemSistema(`${data.autor} conectou.`);
+          
+          if (data.lista) {
+            data.lista.forEach(u => {
+              if (!usuariosNaSala.includes(u)) usuariosNaSala.push(u);
+            });
+            atualizarListaUsuarios();
+          }
+
+          conexoes.forEach(c => {
+            if (c !== conn) c.send({ tipo: 'lista-update', lista: usuariosNaSala });
+          });
+        } else if (data.tipo === 'lista-update') {
+          usuariosNaSala = data.lista;
+          atualizarListaUsuarios();
+        } else if (data.tipo === 'msg') {
+          mostrarMensagem(data.autor, data.texto, false, data.fotoPerfil);
+          conexoes.forEach(c => { if(c !== conn) c.send(data); });
+        } else if (data.tipo === 'img') {
+          mostrarMensagem(data.autor, data.url, true, data.fotoPerfil);
+          conexoes.forEach(c => { if(c !== conn) c.send(data); });
+        } else if (data.tipo === 'sistema') {
+          mostrarMensagemSistema(data.texto);
+        }
+      });
+    }
+
+    function handlePaste(event) {
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          const file = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const base64Image = e.target.result;
+            const payload = { tipo: 'img', autor: meuApelido, url: base64Image, fotoPerfil: minhaFotoUrl };
+            conexoes.forEach(conn => conn.send(payload));
+            mostrarMensagem(meuApelido, base64Image, true, minhaFotoUrl);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    }
+
+    function enviarMensagem() {
+      const input = document.getElementById('texto-msg');
+      const texto = input.value.trim();
+
+      const ehLinkImagem = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg|webp)/i.test(texto);
+
+      if (texto !== '') {
+        const payload = { 
+          tipo: ehLinkImagem ? 'img' : 'msg', 
+          autor: meuApelido, 
+          fotoPerfil: minhaFotoUrl,
+          texto: texto,
+          url: texto 
+        };
+
+        conexoes.forEach(conn => conn.send(payload));
+        mostrarMensagem(meuApelido, texto, ehLinkImagem, minhaFotoUrl);
+        input.value = '';
+      }
+    }
+
+    function mostrarMensagem(autor, conteudo, ehImagem = false, fotoPerfil = '') {
+      const areaMsg = document.getElementById('mensagens');
+      const div = document.createElement('div');
+      div.className = 'message-group';
+      
+      const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const inicial = autor.charAt(0).toUpperCase();
+
+      const avatarHtml = fotoPerfil 
+        ? `<div class="avatar" style="background-image: url('${fotoPerfil}'); background-size: cover; background-position: center;"></div>`
+        : `<div class="avatar">${inicial}</div>`;
+
+      const corpoMensagem = ehImagem 
+        ? `<img src="${conteudo}" style="max-width: 300px; max-height: 300px; border: 2px solid #404040; margin-top: 4px; display: block;" onerror="this.alt='Erro ao carregar'; this.style.display='none';">`
+        : `<div class="message-text">${conteudo}</div>`;
+
+      div.innerHTML = `
+        ${avatarHtml}
+        <div style="flex: 1;">
+          <div class="message-header">
+            <span class="message-author">${autor}</span>
+            <span class="message-time">(${hora})</span>
+          </div>
+          ${corpoMensagem}
+        </div>
+      `;
+
+      areaMsg.appendChild(div);
+      areaMsg.scrollTop = areaMsg.scrollHeight;
+    }
+
+    function mostrarMensagemSistema(texto) {
+      const areaMsg = document.getElementById('mensagens');
+      const div = document.createElement('div');
+      div.className = 'system-msg';
+      div.innerText = texto;
+      areaMsg.appendChild(div);
+      areaMsg.scrollTop = areaMsg.scrollHeight;
+    }
+
+    async function abrirPainelDev() {
+      const chaves = obterChavesData();
+      const baseUrl = 'https://countapi.mileshilliard.com/api/v1/get/';
+
+      try {
+        const [resDia, resSem, resMes, resAno] = await Promise.all([
+          fetch(baseUrl + chaves.dia).then(r => r.json()),
+          fetch(baseUrl + chaves.semana).then(r => r.json()),
+          fetch(baseUrl + chaves.mes).then(r => r.json()),
+          fetch(baseUrl + chaves.ano).then(r => r.json())
+        ]);
+
+        const dia = resDia.value || 0;
+        const semana = resSem.value || 0;
+        const mes = resMes.value || 0;
+        const ano = resAno.value || 0;
+
+        alert(`📊 PAINEL DE DEV ICQ\n\n` +
+              `• Hoje: ${dia}\n` +
+              `• Esta Semana: ${semana}\n` +
+              `• Este Mês: ${mes}\n` +
+              `• Este Ano: ${ano}`);
+      } catch (err) {
+        alert('Painel Dev: Erro ao carregar estatísticas.');
+      }
+    }
+
+    function focarParaTrocarFoto() {
+      alert('Cole uma imagem usando Ctrl+V em qualquer lugar da tela para mudar sua foto de perfil!');
+    }
+
+    document.addEventListener('paste', function(event) {
+      if (document.activeElement.id === 'texto-msg') return;
+
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          const file = item.getAsFile();
+          const reader = new FileReader();
+
+          reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+
+            img.onload = function() {
+              minhaFotoUrl = img.src;
+
+              const avatar = document.getElementById('user-avatar');
+              avatar.style.backgroundImage = `url('${img.src}')`;
+              avatar.innerText = '';
+
+              const canvas = document.getElementById('foto-64x64');
+              const ctx = canvas.getContext('2d');
+              ctx.clearRect(0, 0, 64, 64);
+              ctx.drawImage(img, 0, 0, 64, 64);
+            };
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
